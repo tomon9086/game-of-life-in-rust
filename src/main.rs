@@ -1,5 +1,6 @@
 use piston_window::*;
 use rand::prelude::*;
+use std::{thread, time};
 
 struct Map {
   width: usize,
@@ -38,8 +39,8 @@ impl Map {
     cb: fn(&Map, &Option<Cell>, usize, usize) -> Cell,
   ) -> Vec<Cell> {
     let mut cells: Vec<Cell> = vec![];
-    for i in 0..width {
-      for j in 0..height {
+    for j in 0..height {
+      for i in 0..width {
         let cell: Option<Cell> = None;
         cells.push(cb(self, &cell, i, j));
       }
@@ -135,27 +136,6 @@ impl Map {
   }
 }
 
-impl Cell {
-  fn fill(&self, color: types::Color) {
-    println!("fill!!!");
-    // let window = self.map.window;
-    // let x = self.x;
-    // let y = self.y;
-    // let width = self.width;
-    // let height = self.height;
-    // if let Some(event) = window.next() {
-    //   window.draw_2d(&event, |context, graphics, _device| {
-    //     rectangle(
-    //       color,
-    //       [x as f64, y as f64, width, height],
-    //       context.transform,
-    //       graphics,
-    //     );
-    //   });
-    // }
-  }
-}
-
 fn open_window(width: u32, height: u32, title: &'static str) -> PistonWindow {
   return WindowSettings::new(title, [width, height])
     .exit_on_esc(true)
@@ -163,48 +143,52 @@ fn open_window(width: u32, height: u32, title: &'static str) -> PistonWindow {
     .unwrap();
 }
 
-fn draw(window: &mut PistonWindow) {
-  let window_size = window.size();
-  // let (window_width, window_height) = (window_size.width, window_size.height);
-  let (cell_width, cell_height) = (16, 16);
-  let (width, height) = (4, 4);
-  // let mut i = 0;
-  // while let Some(event) = window.next() {
-  //   window.draw_2d(&event, |context, graphics, _device| {
-  //     clear([1.0; 4], graphics);
-  //     // println!("{}", i);
-  //     for i in 0..width {
-  //       for j in 0..height {
-  //         let x = (i as f64) * (cell_width as f64);
-  //         let y = (j as f64) * (cell_height as f64);
-  //         // println!("{}, {}", x, y)
-
-  //         rectangle(
-  //           [i as f32 / width as f32, 0.0, j as f32 / height as f32, 1.0],
-  //           [x, y, cell_width as f64, cell_height as f64],
-  //           context.transform,
-  //           graphics,
-  //         );
-  //       }
-  //     }
-  //     // i += 1;
-  //   });
-  // }
+fn draw(window: &mut PistonWindow, map: &Map) {
+  let width = map.width;
+  let height = map.height;
+  let dead_color = [0., 0., 0., 1.];
+  let alive_color = [0., 1., 0., 1.];
+  let frame_width = 4.0;
+  let border_width = 2.0;
+  let (window_width, window_height) = (window.size().width, window.size().height);
+  let (cell_width, cell_height) = (
+    (window_width - 2. * frame_width + border_width) / (width as f64) - border_width,
+    (window_height - 2. * frame_width + border_width) / (height as f64) - border_width,
+  );
+  if let Some(event) = window.next() {
+    println!("drawing!!!!");
+    window.draw_2d(&event, |context, graphics, _device| {
+      clear([0.; 4], graphics);
+      for x in 0..width {
+        for y in 0..height {
+          println!("{} {}", x, y);
+          let cell = map.cells[width * y + x];
+          let px = frame_width + (x as f64) * (border_width + cell_width);
+          let py = frame_width + (y as f64) * (border_width + cell_height);
+          let mut color = dead_color;
+          if cell.is_alive {
+            color = alive_color;
+          }
+          rectangle(
+            color,
+            [px, py, cell_width, cell_height],
+            context.transform,
+            graphics,
+          );
+        }
+      }
+    });
+  }
 }
 
 fn main() {
-  let (cell_width, cell_height) = (16, 16);
-  let (width, height): (usize, usize) = (10, 10);
-  let mut window = open_window(
-    cell_width * (width as u32),
-    cell_height * (height as u32),
-    "Hello, Rust!",
-  );
-  let mut map = Map::new(width, height);
+  // let mut window = open_window(240, 240, "Game of Life in Rust");
 
+  let mut map = Map::new(10, 10);
   map.randomize();
+  for g in 0..30 {
+    // draw(&mut window, &map);
 
-  for g in 0..10 {
     let cells = map.get_2d_cells();
     println!(
       "{}\n",
@@ -226,6 +210,10 @@ fn main() {
         .collect::<Vec<String>>()
         .join("\n")
     );
+
     map.next_generation();
+
+    thread::sleep(time::Duration::from_millis(500));
   }
+  // thread::sleep(time::Duration::from_millis(10000));
 }
