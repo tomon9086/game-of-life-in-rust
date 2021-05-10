@@ -47,6 +47,16 @@ impl Map {
     return cells;
   }
 
+  fn randomize(&mut self) {
+    let width = self.width;
+    let height = self.height;
+    for i in 0..width {
+      for j in 0..height {
+        self.cells[width * j + i].is_alive = random::<bool>();
+      }
+    }
+  }
+
   fn next_generation(&self) -> Vec<Cell> {
     let new_cells = Self::generate_cells(self, self.width, self.height, |map, cell, x, y| {
       /*
@@ -179,11 +189,7 @@ fn main() {
   );
   let mut map = Map::new(width, height);
 
-  for i in 0..width {
-    for j in 0..height {
-      map.cells[width * j + i].is_alive = random::<bool>();
-    }
-  }
+  map.randomize();
 
   for g in 0..10 {
     println!("{}", g);
