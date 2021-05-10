@@ -57,7 +57,7 @@ impl Map {
     }
   }
 
-  fn next_generation(&self) -> Vec<Cell> {
+  fn next_generation(&mut self) {
     let new_cells = Self::generate_cells(self, self.width, self.height, |map, cell, x, y| {
       /*
        * around
@@ -118,7 +118,7 @@ impl Map {
       };
     });
 
-    return new_cells;
+    self.cells = new_cells;
   }
 
   fn get_2d_cells(&self) -> Vec<Vec<Cell>> {
@@ -226,6 +226,6 @@ fn main() {
         .collect::<Vec<String>>()
         .join("\n")
     );
-    map.cells = map.next_generation();
+    map.next_generation();
   }
 }
