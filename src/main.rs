@@ -183,8 +183,8 @@ fn main() {
       clear([0.; 4], graphics);
       for x in 0..map.width {
         for y in 0..map.height {
-          let rect = convert_coord_to_rect(&map, window_size, x, y);
-          rectangle(rect.0, rect.1, context.transform, graphics);
+          let (color, rect) = convert_coord_to_rect(&map, window_size, x, y);
+          rectangle(color, rect, context.transform, graphics);
         }
       }
     });
