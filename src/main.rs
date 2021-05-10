@@ -120,6 +120,19 @@ impl Map {
 
     return new_cells;
   }
+
+  fn get_2d_cells(&self) -> Vec<Vec<Cell>> {
+    let width = self.width;
+    let height = self.height;
+    let mut cells: Vec<Vec<Cell>> = vec![];
+    for j in 0..height {
+      cells.push(vec![]);
+      for i in 0..width {
+        cells[j].push(self.cells[width * j + i]);
+      }
+    }
+    return cells;
+  }
 }
 
 impl Cell {
@@ -192,21 +205,27 @@ fn main() {
   map.randomize();
 
   for g in 0..10 {
-    println!("{}", g);
-    println!("------------");
-    for i in 0..width {
-      let mut l = String::new();
-      for j in 0..height {
-        let mut c = " ";
-        if map.cells[width * j + i].is_alive {
-          c = "@";
-        }
-        l = format!("{}{}", l, c);
-      }
-      println!("|{}|", l);
-    }
-    println!("------------");
-    println!("");
+    let cells = map.get_2d_cells();
+    println!(
+      "{}\n",
+      cells
+        .into_iter()
+        .map(|row| {
+          return row
+            .into_iter()
+            .map(|cell| {
+              if cell.is_alive {
+                return "@".to_string();
+              } else {
+                return "-".to_string();
+              }
+            })
+            .collect::<Vec<String>>()
+            .join(" ");
+        })
+        .collect::<Vec<String>>()
+        .join("\n")
+    );
     map.cells = map.next_generation();
   }
 }
