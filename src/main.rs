@@ -140,7 +140,8 @@ fn open_window(width: u32, height: u32, title: &'static str) -> PistonWindow {
     .build()
     .unwrap();
   // window.set_lazy(true);
-  window.events.set_ups(2);
+  window.events.set_ups(3);
+  window.events.max_fps(5);
   return window;
 }
 
